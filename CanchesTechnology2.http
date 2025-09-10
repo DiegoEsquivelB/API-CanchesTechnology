@@ -1,0 +1,6 @@
+@CanchesTechnology2_HostAddress = http://localhost:5275
+
+GET {{CanchesTechnology2_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
