@@ -1259,11 +1259,15 @@ function renderOrdenes() {
         <button onclick="eliminarOrden(${o.id})">🗑️ Eliminar</button>
       `;
     } else if (o.estado === "Aprobada") {
-      acciones = `<button onclick="recibirOrden(${o.id})">📦 Recibir</button>`;
+      acciones = `<button onclick="recibirOrden(${o.id})">📦 Recibir</button>
+      <button onclick="exportarExcelOrden(${o.id})">📦 Exportar a Excel</button>`;
+      
     } else if (o.estado === "Recibida") {
       acciones = `
         <button onclick="verOrden(${o.id})">👀 Ver Detalles</button>
         <button onclick="eliminarOrden(${o.id})">🗑️ Eliminar</button>
+        <button onclick="exportarExcelOrden(${o.id})">📦 Exportar a Excel</button>
+
       `;
     } else if (o.estado === "Rechazada") {
       acciones = `
@@ -1392,6 +1396,145 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Error cargando datos al inicio:", error);
   }
 });
+
+
+async function exportarExcelStockBajo() {
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet("Stock Bajo");
+
+  // Encabezados
+  sheet.columns = [
+    { header: "ID", key: "id", width: 8 },
+    { header: "Nombre", key: "nombre", width: 25 },
+    { header: "Cantidad", key: "cantidad", width: 12 },
+    { header: "Stock Mínimo", key: "stockMinimo", width: 15 },
+    { header: "Proveedor", key: "proveedor", width: 25 },
+    { header: "Ubicación", key: "ubicacion", width: 20 }
+  ];
+
+  // Estilo encabezados
+  sheet.getRow(1).eachCell(cell => {
+    cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFB22222" } };
+    cell.alignment = { horizontal: "center" };
+    cell.border = { top: {style:"thin"}, left:{style:"thin"}, bottom:{style:"thin"}, right:{style:"thin"} };
+  });
+
+  // Filtrar productos con stock bajo
+  const productosStockBajo = productos.filter(p => p.cantidad <= p.stockMinimo);
+
+  productosStockBajo.forEach(p => {
+    const row = sheet.addRow({
+      id: p.id,
+      nombre: p.nombre,
+      cantidad: p.cantidad,
+      stockMinimo: p.stockMinimo,
+      proveedor: p.proveedor?.nombre || "-",
+      ubicacion: p.ubicacion?.descripcion || "-"
+    });
+
+    // Pintar en rojo filas críticas
+    row.eachCell(cell => {
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFC7CE" } };
+    });
+  });
+
+  if (productosStockBajo.length === 0) {
+    sheet.addRow(["No hay productos en stock bajo."]);
+  }
+
+  // Descargar
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `Reporte_Stock_Bajo_${new Date().toISOString().slice(0,10)}.xlsx`;
+  link.click();
+}
+
+
+async function exportarExcelOrden(id) {
+  const orden = ordenes.find(o => o.id === id);
+  if (!orden) return alert("Orden no encontrada.");
+
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet(`Orden_${id}`);
+
+  // Columnas
+  sheet.columns = [
+    { header: "Orden ID", key: "id", width: 10 },
+    { header: "Fecha", key: "fecha", width: 15 },
+    { header: "Proveedor", key: "proveedor", width: 25 },
+    { header: "Estado", key: "estado", width: 12 },
+    { header: "Producto", key: "producto", width: 25 },
+    { header: "Cantidad", key: "cantidad", width: 10 },
+    { header: "Costo Unitario", key: "costoUnitario", width: 15 },
+    { header: "Subtotal", key: "subtotal", width: 15 },
+  ];
+
+  // Estilo encabezados
+  sheet.getRow(1).eachCell(cell => {
+    cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF4F81BD" } };
+    cell.alignment = { horizontal: "center" };
+    cell.border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
+  });
+
+  // Filas de detalle
+  let totalOrden = 0;
+  orden.detalles.forEach(d => {
+    const subtotal = (d.costoUnitario ?? 0) * (d.cantidad ?? 0);
+    totalOrden += subtotal;
+
+    sheet.addRow({
+      id: orden.id,
+      fecha: new Date(orden.fecha).toLocaleDateString(),
+      proveedor: orden.proveedor?.nombre || "-",
+      estado: orden.estado,
+      producto: d.producto?.nombre || "-",
+      cantidad: d.cantidad,
+      costoUnitario: d.costoUnitario,
+      subtotal
+    });
+  });
+
+  // Agregar fila de total
+  const lastRow = sheet.addRow({
+    producto: "TOTAL",
+    subtotal: totalOrden
+  });
+
+  lastRow.eachCell((cell, colNumber) => {
+    cell.font = { bold: true };
+    if (colNumber === 8) cell.numFmt = '"Q"#,##0.00';
+  });
+
+  // Formato columnas numéricas
+  sheet.getColumn(7).numFmt = '"Q"#,##0.00'; // Costo unitario
+  sheet.getColumn(8).numFmt = '"Q"#,##0.00'; // Subtotal
+
+  // Descargar
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `Orden_${id}.xlsx`;
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+
+
+
+
+document.getElementById("btnExportarOrdenes")
+  .addEventListener("click", exportarExcelOrdenes);
+
+
+document.getElementById("btnExportarStockBajo")
+  .addEventListener("click", exportarExcelStockBajo);
+
+
 
 
 // ================================================================
