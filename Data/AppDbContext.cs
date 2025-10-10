@@ -19,6 +19,7 @@ namespace CanchesTechnology2.Data
         // 🔹 Nuevas tablas
         public DbSet<SolicitudCompra> SolicitudesCompra { get; set; }
         public DbSet<DetalleSolicitudCompra> DetallesSolicitudesCompra { get; set; }
+        public DbSet<Usuario> Usuarios { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

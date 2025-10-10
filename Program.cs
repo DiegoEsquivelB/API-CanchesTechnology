@@ -37,6 +37,10 @@ var app = builder.Build();
 
 app.UseCors("AllowAll");
 
+// Habilitar archivos estáticos antes de Swagger
+app.UseDefaultFiles(); // Busca index.html por defecto
+app.UseStaticFiles();  // Sirve archivos de wwwroot
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

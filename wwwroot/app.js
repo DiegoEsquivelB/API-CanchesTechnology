@@ -730,6 +730,56 @@ async function cargarReporteCompras() {
 }
 
 
+async function exportarExcelStockBajo() {
+    const productosBajos = productos.filter(p => p.cantidad <= p.stockMinimo);
+    if (productosBajos.length === 0) {
+        alert("No hay productos con stock bajo.");
+        return;
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Stock Bajo');
+
+    sheet.columns = [
+        { header: 'ID', key: 'id', width: 5 },
+        { header: 'Nombre', key: 'nombre', width: 25 },
+        { header: 'Cantidad', key: 'cantidad', width: 10 },
+        { header: 'Stock Mínimo', key: 'stockMinimo', width: 12 },
+        { header: 'Proveedor', key: 'proveedor', width: 20 },
+        { header: 'Ubicacion', key: 'ubicacion', width: 25 },
+    ];
+
+    productosBajos.forEach(p => {
+        sheet.addRow({
+            id: p.id,
+            nombre: p.nombre,
+            cantidad: p.cantidad,
+            stockMinimo: p.stockMinimo,
+            proveedor: p.proveedor?.nombre || '-',
+            ubicacion: p.ubicacion?.descripcion || '-'
+        });
+    });
+
+    sheet.getRow(1).eachCell(cell => {
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F81BD' } };
+        cell.alignment = { horizontal: 'center' };
+    });
+
+    sheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return;
+        row.eachCell(cell => {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC7CE' } };
+        });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/octet-stream' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Stock_Bajo_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    link.click();
+}
 
 
 
@@ -983,10 +1033,6 @@ async function exportarExcelCompras() {
   link.click();
 }
 
-
-
-
-
 // ================================================================
 // ===============  GESTIÓN DE COMPRAS: SOLICITUDES  ==============
 // ================================================================
@@ -1233,7 +1279,6 @@ async function eliminarSolicitudOrden(id) {
   }
 }
 
-
 // ================================================================
 // ===============  GESTIÓN DE COMPRAS: ÓRDENES (OC)  ==============
 // ================================================================
@@ -1372,7 +1417,6 @@ async function eliminarOrden(id) {
   }
 }
 
-
 // ================================================================
 // ===============  INICIALIZACIÓN ================================
 document.addEventListener("DOMContentLoaded", async () => {
@@ -1384,7 +1428,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       cargarPedidos(),
       cargarSolicitudes(),
       cargarOrdenes()
-
     ]);
 
     // Vista inicial (ajústalo a tu preferencia)
@@ -1395,8 +1438,80 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (error) {
     console.error("Error cargando datos al inicio:", error);
   }
-});
 
+  // --- LOGIN/REGISTER/LOGOUT ---
+  const loginForm = document.getElementById('login-form');
+  if (loginForm) {
+    loginForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const usuario = document.getElementById('login-usuario').value;
+      const contraseña = document.getElementById('login-contraseña').value;
+      const errorDiv = document.getElementById('login-error');
+      errorDiv.textContent = '';
+      try {
+        const resp = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombreUsuario: usuario, contraseña })
+        });
+        if (resp.ok) {
+          document.getElementById('login-container').style.display = 'none';
+          document.getElementById('main-content').style.display = '';
+        } else {
+          const data = await resp.json();
+          errorDiv.textContent = data || 'Usuario o contraseña incorrectos';
+        }
+      } catch {
+        errorDiv.textContent = 'Error de conexión con el servidor.';
+      }
+    });
+  }
+
+  const registerForm = document.getElementById('register-form');
+  if (registerForm) {
+    registerForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const usuario = document.getElementById('register-usuario').value;
+      const contraseña = document.getElementById('register-contraseña').value;
+      const errorDiv = document.getElementById('register-error');
+      const successDiv = document.getElementById('register-success');
+      errorDiv.textContent = '';
+      successDiv.textContent = '';
+      try {
+        const resp = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombreUsuario: usuario, contraseña })
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          successDiv.textContent = data.mensaje || 'Usuario registrado correctamente';
+        } else {
+          const data = await resp.json();
+          errorDiv.textContent = data || 'Error al registrar usuario';
+        }
+      } catch {
+        errorDiv.textContent = 'Error de conexión con el servidor.';
+      }
+    });
+  }
+
+  const btnLogout = document.getElementById('btn-logout');
+  if (btnLogout) {
+    btnLogout.addEventListener('click', function () {
+      document.getElementById('main-content').style.display = 'none';
+      document.getElementById('login-container').style.display = '';
+      // Limpiar campos y mensajes
+      document.getElementById('login-usuario').value = '';
+      document.getElementById('login-contraseña').value = '';
+      document.getElementById('login-error').textContent = '';
+      document.getElementById('register-usuario').value = '';
+      document.getElementById('register-contraseña').value = '';
+      document.getElementById('register-error').textContent = '';
+      document.getElementById('register-success').textContent = '';
+    });
+  }
+});
 
 async function exportarExcelStockBajo() {
   const workbook = new ExcelJS.Workbook();
@@ -1522,33 +1637,6 @@ async function exportarExcelOrden(id) {
   a.download = `Orden_${id}.xlsx`;
   a.click();
   window.URL.revokeObjectURL(url);
-}
-
-
-
-
-document.getElementById("btnExportarOrdenes")
-  .addEventListener("click", exportarExcelOrdenes);
-
-
-document.getElementById("btnExportarStockBajo")
-  .addEventListener("click", exportarExcelStockBajo);
-
-
-
-
-// ================================================================
-// ===============  UTIL EXTRA PARA COMPATIBILIDAD ================
-// ================================================================
-
-// (Compat) Si tu HTML viejo aún llama a esta función para OC, la redirigimos a Solicitudes
-function filtrarProductosPorProveedor() {
-  // En el nuevo flujo, la creación manual de OC ya no aplica; usamos la de Solicitudes
-  // Mantengo esta función para evitar errores si el HTML antiguo la llama.
-  const selProd = document.getElementById("orden-productoId");
-  if (!selProd) return; // no hay form de OC en el nuevo HTML
-  selProd.innerHTML = `<option value="">-- Selecciona Producto --</option>`;
-  // (Vacío intencionalmente)
 }
 
 
