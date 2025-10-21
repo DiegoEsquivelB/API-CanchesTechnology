@@ -115,9 +115,17 @@ async function cargarProductos() {
 
 async function agregarProducto(e) {
   e.preventDefault();
+  const cantidad = parseInt(document.getElementById("cantidad").value);
+  if (isNaN(cantidad) || cantidad < 0) {
+    alert("La cantidad no puede ser negativa.");
+    return;
+    }
+
+
+
   const producto = {
     nombre: document.getElementById("nombre").value,
-    cantidad: parseInt(document.getElementById("cantidad").value),
+    cantidad: cantidad,
     precio: parseFloat(document.getElementById("precio").value),
     costo: parseFloat(document.getElementById("costo").value),
     stockMinimo: parseInt(document.getElementById("stockMinimo").value),
@@ -139,10 +147,16 @@ async function actualizarProducto() {
   const id = document.getElementById("productoId").value;
   if (!id) return;
 
+  const cantidad = parseInt(document.getElementById("cantidad").value);
+  if (isNaN(cantidad) || cantidad < 0) {
+    alert("La cantidad no puede ser negativa.");
+    return;
+  }
+
   const producto = {
     id: parseInt(id),
     nombre: document.getElementById("nombre").value,
-    cantidad: parseInt(document.getElementById("cantidad").value),
+    cantidad: cantidad,
     precio: parseFloat(document.getElementById("precio").value),
     costo: parseFloat(document.getElementById("costo").value),
     stockMinimo: parseInt(document.getElementById("stockMinimo").value),
@@ -166,14 +180,22 @@ async function eliminarProducto(id) {
 
 function editarProducto(id) {
   const p = productos.find(x => x.id === id);
-  document.getElementById("productoId").value = p.id;
-  document.getElementById("nombre").value = p.nombre;
-  document.getElementById("cantidad").value = p.cantidad;
-  document.getElementById("precio").value = p.precio;
-  document.getElementById("costo").value = p.costo;
-  document.getElementById("stockMinimo").value = p.stockMinimo;
-  document.getElementById("proveedorId").value = p.proveedorId;
-  document.getElementById("ubicacionId").value = p.ubicacionId;
+  const productoIdInput = document.getElementById("productoId");
+  if (productoIdInput) productoIdInput.value = p.id;
+  const nombreInput = document.getElementById("nombre");
+  if (nombreInput) nombreInput.value = p.nombre;
+  const cantidadInput = document.getElementById("cantidad");
+  if (cantidadInput) cantidadInput.value = p.cantidad;
+  const precioInput = document.getElementById("precio");
+  if (precioInput) precioInput.value = p.precio;
+  const costoInput = document.getElementById("costo");
+  if (costoInput) costoInput.value = p.costo;
+  const stockMinimoInput = document.getElementById("stockMinimo");
+  if (stockMinimoInput) stockMinimoInput.value = p.stockMinimo;
+  const proveedorIdInput = document.getElementById("proveedorId");
+  if (proveedorIdInput) proveedorIdInput.value = p.proveedorId;
+  const ubicacionIdInput = document.getElementById("ubicacionId");
+  if (ubicacionIdInput) ubicacionIdInput.value = p.ubicacionId;
 }
 
 
@@ -1053,7 +1075,7 @@ function renderSolicitudes() {
     const acciones = `
       ${s.estado === "Pendiente" ? `
         <button onclick="aprobarSolicitud(${s.id})">✅ Aprobar</button>
-        <button onclick="rechazarSolicitud(${s.id})">⛔ Rechazar</button>
+        <button onclick="rehazarSolicitud(${s.id})">⛔ Rechazar</button>
         <button onclick="eliminarSolicitudOrden(${s.id})">🗑️ Eliminar</button>
       ` : `
         <button onclick="verSolicitud(${s.id})">👀 Ver</button>
