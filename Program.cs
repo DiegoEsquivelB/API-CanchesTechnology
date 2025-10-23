@@ -139,7 +139,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // Rutas públicas de salud/raíz para evitar 401 en la URL base
-app.MapGet("/", () => Results.Ok(new { status = "OK", service = "CanchesTechnology2 API" }));
+// Cambiado: redirigir la raíz al Swagger UI para que al entrar en la URL de Railway se muestre Swagger.
+app.MapGet("/", () => Results.Redirect("/swagger"));
 app.MapGet("/health", () => Results.Ok(new { status = "OK" }));
 
 app.MapControllers();
