@@ -51,11 +51,12 @@ builder.Services.AddControllers(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy.WithOrigins("https://frontendcanchestechnology-proyectoanalisis.up.railway.app") // dominio de tu frontend
+              .AllowAnyHeader()  // permite todos los headers
+              .AllowAnyMethod()  // permite GET, POST, PUT, DELETE, etc.
+              .AllowCredentials(); // si vas a enviar cookies o autenticación
     });
 });
 
@@ -125,7 +126,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-app.UseCors("AllowAll");
+app.UseCors("AllowFrontend");
 
 // Habilitar archivos estáticos (si decides seguir sirviendo frontend desde el mismo proyecto)
 app.UseDefaultFiles();
