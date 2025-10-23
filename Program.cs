@@ -105,10 +105,6 @@ var app = builder.Build();
 
 app.UseCors("AllowAll");
 
-// Habilitar archivos estáticos antes de Swagger
-app.UseDefaultFiles(); // Busca index.html por defecto
-app.UseStaticFiles();  // Sirve archivos de wwwroot
-
 // Configuración: permitir que un dominio específico muestre Swagger en producción.
 // Establece la variable de entorno SwaggerHost (ej: swagger.example.com) en Railway para el dominio que quieres que muestre Swagger.
 var swaggerHost = builder.Configuration["SwaggerHost"]; // lee env var SwaggerHost
@@ -133,6 +129,15 @@ if (!string.IsNullOrEmpty(swaggerHost))
             c.RoutePrefix = string.Empty; // sirve Swagger UI en el root del host
         });
     });
+}
+
+// Controlar si se sirve el frontend estático mediante variable de entorno ServeFrontend (por defecto: false)
+var serveFrontend = builder.Configuration["ServeFrontend"];
+if (string.Equals(serveFrontend, "true", StringComparison.OrdinalIgnoreCase))
+{
+    // Habilitar archivos estáticos solo cuando se quiera servir el frontend
+    app.UseDefaultFiles(); // Busca index.html por defecto
+    app.UseStaticFiles();  // Sirve archivos de wwwroot
 }
 
 app.UseAuthentication();

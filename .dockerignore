@@ -10,3 +10,4 @@ local.settings.json
 **/*.md
 Dockerfile.*
 *.ps1
+wwwroot/
