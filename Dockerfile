@@ -20,5 +20,5 @@ EXPOSE 80
 # Copy published output
 COPY --from=build /app/publish .
 
-# Entrypoint
-ENTRYPOINT ["dotnet", "CanchesTechnology2.dll"]
+# Entrypoint: set ASPNETCORE_URLS from PORT env var provided by Railway (fallback to 80)
+ENTRYPOINT ["sh", "-c", "export ASPNETCORE_URLS=\"http://0.0.0.0:${PORT:-80}\" && exec dotnet CanchesTechnology2.dll"]
