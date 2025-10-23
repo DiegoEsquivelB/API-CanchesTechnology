@@ -4,33 +4,76 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Configuration;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 
 namespace CanchesTechnology2.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [AllowAnonymous]
     public class AuthController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(AppDbContext context)
+        public AuthController(AppDbContext context, IConfiguration configuration, ILogger<AuthController> logger)
         {
             _context = context;
+            _configuration = configuration;
+            _logger = logger;
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.NombreUsuario == request.NombreUsuario);
-            if (usuario == null)
-                return Unauthorized("Usuario o contraseña incorrectos");
+            try
+            {
+                var usuario = await _context.Usuarios
+                    .FirstOrDefaultAsync(u => u.NombreUsuario == request.NombreUsuario);
+                if (usuario == null)
+                    return Unauthorized("Usuario o contraseña incorrectos");
 
-            var hash = CalcularHash(request.Contraseña);
-            if (usuario.ContraseñaHash != hash)
-                return Unauthorized("Usuario o contraseña incorrectos");
+                var hash = CalcularHash(request.Contraseña);
+                if (usuario.ContraseñaHash != hash)
+                    return Unauthorized("Usuario o contraseña incorrectos");
 
-            return Ok(new { mensaje = "Login exitoso" });
+                // Generar token JWT
+                var token = GenerarToken(usuario.NombreUsuario);
+
+                return Ok(new { token });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en Login");
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        private string GenerarToken(string usuario)
+        {
+            var key = _configuration["Jwt:Key"];
+            var issuer = _configuration["Jwt:Issuer"];
+            var audience = _configuration["Jwt:Audience"];
+            var expireMinutes = int.Parse(_configuration["Jwt:ExpireMinutes"] ?? "120");
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[] {
+                new Claim(ClaimTypes.Name, usuario)
+            };
+
+            var token = new JwtSecurityToken(issuer, audience, claims,
+              expires: DateTime.UtcNow.AddMinutes(expireMinutes),
+              signingCredentials: credentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         private static string CalcularHash(string input)

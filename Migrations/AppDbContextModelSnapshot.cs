@@ -165,6 +165,10 @@ namespace CanchesTechnology2.Migrations
                     b.Property<int>("Cantidad")
                         .HasColumnType("int");
 
+                    b.Property<string>("CodigoProducto")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<decimal>("Costo")
                         .HasColumnType("decimal(65,30)");
 

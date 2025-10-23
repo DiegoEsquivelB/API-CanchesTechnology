@@ -2,39 +2,71 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sistema de Inventario</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Formulario de Login -->
-    <div id="login-container">
-        <h2>Iniciar Sesión</h2>
-        <form id="login-form">
-            <input type="text" id="login-usuario" placeholder="Usuario" required><br>
-            <input type="password" id="login-contraseña" placeholder="Contraseña" required><br>
-            <button type="submit">Entrar</button>
-        </form>
-        <div id="login-error" style="color:red; font-weight:bold;"></div>
-        <hr>
-        <h3>Registrar nuevo usuario</h3>
-        <form id="register-form">
-            <input type="text" id="register-usuario" placeholder="Usuario" required><br>
-            <input type="password" id="register-contraseña" placeholder="Contraseña" required><br>
-            <button type="submit">Registrar</button>
-        </form>
-        <div id="register-error" style="color:red; font-weight:bold;"></div>
-        <div id="register-success" style="color:green; font-weight:bold;"></div>
+    <!-- Formulario de Login (mejorado) -->
+    <div id="login-wrapper">
+        <div class="login-card" id="login-container">
+            <div class="brand"> 
+                <h2>ERP Canches</h2>
+                <p class="tagline">Gestión integral de inventario</p>
+            </div>
+
+            <div class="tabs" role="tablist">
+                <button id="tab-login" role="tab" aria-controls="panel-login" aria-selected="true" class="active">Iniciar sesión</button>
+                <button id="tab-register" role="tab" aria-controls="panel-register" aria-selected="false">Registrarse</button>
+            </div>
+
+            <div class="panels">
+                <div id="panel-login" role="tabpanel">
+                    <form id="login-form" class="form-card" novalidate>
+                        <label for="login-usuario" class="visually-hidden">Usuario</label>
+                        <input type="text" id="login-usuario" placeholder="Usuario" required>
+
+                        <label for="login-contraseña" class="visually-hidden">Contraseña</label>
+                        <input type="password" id="login-contraseña" placeholder="Contraseña" required>
+
+                        <div class="actions">
+                            <button type="submit" class="btn btn--primary">Entrar</button>
+                        </div>
+                        <div id="login-error" class="form-error" aria-live="polite"></div>
+                    </form>
+                </div>
+
+                <div id="panel-register" role="tabpanel" class="hidden">
+                    <form id="register-form" class="form-card" novalidate>
+                        <label for="register-usuario" class="visually-hidden">Usuario</label>
+                        <input type="text" id="register-usuario" placeholder="Usuario" required>
+
+                        <label for="register-contraseña" class="visually-hidden">Contraseña</label>
+                        <input type="password" id="register-contraseña" placeholder="Contraseña" required>
+
+                        <div class="actions">
+                            <button type="submit" class="btn btn--ghost">Registrar</button>
+                        </div>
+
+                        <div id="register-error" class="form-error" aria-live="polite"></div>
+                        <div id="register-success" class="form-success" aria-live="polite"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="main-content" style="display:none;">
-        <button id="btn-logout" style="float:right; margin:10px;">Salir</button>
+    <div class="content-wrapper">
+    <button id="btn-logout" class="btn btn--danger" style="float:right; margin:10px;">Salir</button>
         <!-- ...todo el contenido actual de tu página... -->
         <h1>ERP CanchesTechnology</h1>
 
         <!-- Menú principal -->
         <nav>
-            <button onclick="mostrarVista('inventario')">Gestión de Inventario</button>
-            <button onclick="mostrarVista('compras')">Gestión de Compras</button>
+            <button data-view="inventario" class="btn" onclick="mostrarVista('inventario')">Gestión de Inventario</button>
+            <button data-view="compras" class="btn" onclick="mostrarVista('compras')">Gestión de Compras</button>
         </nav>
 
         <!-- Vista Inventario -->
@@ -43,11 +75,11 @@
 
             <!-- Submenú -->
             <div class="submenu">
-                <button onclick="mostrarSubSeccion('productos')">Productos</button>
-                <button onclick="mostrarSubSeccion('proveedores')">Proveedores</button>
-                <button onclick="mostrarSubSeccion('pedidos')">Pedidos</button>
-                <button onclick="mostrarSubSeccion('ubicaciones')">Ubicaciones</button>
-                <button onclick="mostrarSubSeccion('reportes')">Reportes</button>
+                <button class="btn btn--chip" onclick="mostrarSubSeccion('productos')">Productos</button>
+                <button class="btn btn--chip" onclick="mostrarSubSeccion('proveedores')">Proveedores</button>
+                <button class="btn btn--chip" onclick="mostrarSubSeccion('pedidos')">Pedidos</button>
+                <button class="btn btn--chip" onclick="mostrarSubSeccion('ubicaciones')">Ubicaciones</button>
+                <button class="btn btn--chip" onclick="mostrarSubSeccion('reportes')">Reportes</button>
             </div>
 
             <!-- Subapartados -->
@@ -66,6 +98,7 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
+                                <th>Código Producto</th>
                                 <th>Nombre</th>
                                 <th>Cantidad</th>
                                 <th>Precio</th>
@@ -83,7 +116,8 @@
 
                     <h4>Gestión de Producto</h4>
                     <form id="form-producto" onsubmit="agregarProducto(event)">
-                        <input type="hidden" id="hiddenProductoId">
+                        <input type="hidden" id="productoId">
+                        <input type="text" id="CodigoProducto" placeholder="Código Producto" required>
                         <input type="text" id="nombre" placeholder="Nombre" required>
                         <input type="number" id="cantidad" placeholder="Cantidad" required>
                         <input type="number" id="precio" placeholder="Precio" step="0.01" required>
@@ -95,9 +129,11 @@
                         <select id="ubicacionId" required>
                             <option value="">-- Selecciona Ubicación --</option>
                         </select>
-                        <button type="submit">Agregar</button>
-                        <button type="button" onclick="actualizarProducto()">Actualizar</button>
-                        <button type="button" onclick="limpiarFormulario('form-producto')">Limpiar Campos</button>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-add">Agregar</button>
+                            <button type="button" class="btn btn-update" onclick="actualizarProducto()">Actualizar</button>
+                            <button type="button" class="btn btn-clear" onclick="limpiarFormulario('form-producto')">Limpiar Campos</button>
+                        </div>
                     </form>
                 </section>
 
@@ -106,7 +142,7 @@
                     <h3>Proveedores</h3>
                     <table id="tabla-proveedores">
                         <thead>
-                            <tr><th>ID</th><th>Nombre</th><th>Contacto</th><th>Email</th><th>Acciones</th></tr>
+                            <tr><th>ID</th><th>Nombre</th><th>Contacto</th><th>NIT</th><th>Email</th><th>Acciones</th></tr>
                         </thead>
                         <tbody></tbody>
                     </table>
@@ -116,11 +152,31 @@
                         <input type="hidden" id="proveedorId">
                         <input type="text" id="prov-nombre" placeholder="Nombre" required>
                         <input type="text" id="prov-contacto" placeholder="Contacto" required>
+                        <input type="text" id="prov-nit" placeholder="NIT">
                         <input type="email" id="prov-email" placeholder="Email" required>
-                        <button type="submit">Agregar</button>
-                        <button type="button" onclick="actualizarProveedor()">Actualizar</button>
-                        <button type="button" onclick="limpiarFormulario('form-proveedor')">Limpiar Campos</button>
+                        <button type="submit" class="btn btn--primary">Agregar</button>
+                        <button type="button" class="btn btn--ghost" onclick="actualizarProveedor()">Actualizar</button>
+                        <button type="button" class="btn btn-ghost-small" onclick="limpiarFormulario('form-proveedor')">Limpiar Campos</button>
                     </form>
+
+                    <h3>Proveedores Externos</h3>
+                    <table id="tabla-proveedores-externos" class="tabla">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Apellido</th>
+                                <th>Teléfono</th>
+                                <th>Email</th>
+                                <th>NIT</th>
+                                <th>Dirección</th>
+                                <th>Categoría</th>
+                                <th>Activo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
                 </section>
 
                 <!-- Ubicaciones -->
@@ -138,9 +194,9 @@
                         <input type="hidden" id="ubicacionId">
                         <input type="text" id="ubicacion-codigo" placeholder="Código" required>
                         <input type="text" id="ubicacion-descripcion" placeholder="Descripción" required>
-                        <button type="submit">Guardar</button>
-                        <button type="button" onclick="actualizarUbicacion()">Actualizar</button>
-                        <button type="button" onclick="limpiarFormulario('form-ubicacion')">Limpiar Campos</button>
+                        <button type="submit" class="btn btn--primary">Guardar</button>
+                        <button type="button" class="btn btn--ghost" onclick="actualizarUbicacion()">Actualizar</button>
+                        <button type="button" class="btn btn-ghost-small" onclick="limpiarFormulario('form-ubicacion')">Limpiar Campos</button>
                     </form>
                     <p id="ubicacion-error" style="color:red;font-weight:bold;"></p>
                 </section>
@@ -174,12 +230,12 @@
                             </select>
                             <input type="number" id="detalle-cantidad" placeholder="Cantidad" required>
                             <input type="text" id="detalle-precio" placeholder="Precio Unitario" readonly>
-                            <button type="button" onclick="agregarDetalle()">Agregar Producto</button>
-                            <button type="button" onclick="limpiarFormulario('form-pedido')">Limpiar Campos</button>
+                            <button type="button" class="btn btn--ghost" onclick="agregarDetalle()">Agregar Producto</button>
+                            <button type="button" class="btn btn-ghost-small" onclick="limpiarFormulario('form-pedido')">Limpiar Campos</button>
                         </div>
 
-                        <button type="submit">Guardar Pedido</button>
-                        <button type="button" onclick="actualizarPedido()">Actualizar</button>
+                        <button type="submit" class="btn btn--primary">Guardar Pedido</button>
+                        <button type="button" class="btn btn--ghost" onclick="actualizarPedido()">Actualizar</button>
                     </form>
                 </section>
 
@@ -188,15 +244,15 @@
 
                     <h2>📊 Reportes de Inventario</h2>
                     <div id="reporte-resumen"></div>
-                    <button onclick="exportarExcelInventario()">📊 Exportar a Excel</button>
+                    <button class="btn btn--primary" onclick="exportarExcelInventario()">📊 Exportar a Excel</button>
                     <h3>⚠️ Productos con bajo stock</h3>
                     <ul id="reporte-bajo-stock"></ul>
-                    <button onclick="exportarExcelStockBajo()">📉 Exportar Stock Bajo</button>
+                    <button class="btn btn--primary" onclick="exportarExcelStockBajo()">📉 Exportar Stock Bajo</button>
 
                     <h3>Productos por Ubicación</h3>
                     <div id="reporte-por-ubicacion"></div>
 
-                    <button onclick="exportarExcelPorUbicacion()">📊Exportar Excel por Ubicación</button>
+                    <button class="btn btn--primary" onclick="exportarExcelPorUbicacion()">📊Exportar Excel por Ubicación</button>
 
 
                     <h3>📈 Márgenes de Ganancia por Producto</h3>
@@ -212,12 +268,12 @@
                         </thead>
                         <tbody></tbody>
                     </table>
-                    <button onclick="exportarExcelMargenes()">📊 Exportar Márgenes a Excel</button>
+                    <button class="btn btn--primary" onclick="exportarExcelMargenes()">📊 Exportar Márgenes a Excel</button>
 
 
                     <h3>📑 Histórico de Compras a Proveedores</h3>
                     <div id="reporte-compras"></div>
-                    <button onclick="exportarExcelCompras()">📊 Exportar a Excel</button>
+                    <button class="btn btn--primary" onclick="exportarExcelCompras()">📊 Exportar a Excel</button>
 
 
                 </section>
@@ -230,8 +286,8 @@
             <h2>Gestión de Compras</h2>
 
             <div class="submenu">
-                <button onclick="mostrarSubSeccion('solicitudes')">Solicitudes de Compra</button>
-                <button onclick="mostrarSubSeccion('ordenes')">Órdenes de Compra</button>
+                <button class="btn btn--chip" onclick="mostrarSubSeccion('solicitudes')">Solicitudes de Compra</button>
+                <button class="btn btn--chip" onclick="mostrarSubSeccion('ordenes')">Órdenes de Compra</button>
             </div>
 
             <div id="subapartados-inventario">
@@ -268,11 +324,11 @@
                             </select>
                             <input type="number" id="solicitud-cantidad" placeholder="Cantidad">
                             <input type="number" id="solicitud-costo" placeholder="Costo Unitario" readonly>
-                            <button type="button" onclick="agregarDetalleSolicitud()">Agregar Producto</button>
+                            <button type="button" class="btn btn--ghost" onclick="agregarDetalleSolicitud()">Agregar Producto</button>
                         </div>
 
-                        <button type="submit">Guardar Solicitud</button>
-                        <button type="button" onclick="generarSolicitudAutomatica()">Generar Automática</button>
+                        <button type="submit" class="btn btn--primary">Guardar Solicitud</button>
+                        <button type="button" class="btn btn--ghost" onclick="generarSolicitudAutomatica()">Generar Automática</button>
                     </form>
                 </section>
 
@@ -290,73 +346,21 @@
                 </section>
             </div>
         </section>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
 
     <script src="app.js"></script>
-
-    <script>
-        document.getElementById('login-form').addEventListener('submit', async function (e) {
-            e.preventDefault();
-            const usuario = document.getElementById('login-usuario').value;
-            const contraseña = document.getElementById('login-contraseña').value;
-            const errorDiv = document.getElementById('login-error');
-            errorDiv.textContent = '';
-            try {
-                const resp = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombreUsuario: usuario, contraseña })
-                });
-                if (resp.ok) {
-                    document.getElementById('login-container').style.display = 'none';
-                    document.getElementById('main-content').style.display = '';
-                } else {
-                    const data = await resp.json();
-                    errorDiv.textContent = data || 'Usuario o contraseña incorrectos';
-                }
-            } catch {
-                errorDiv.textContent = 'Error de conexión con el servidor.';
-            }
-        });
-
-        document.getElementById('register-form').addEventListener('submit', async function (e) {
-            e.preventDefault();
-            const usuario = document.getElementById('register-usuario').value;
-            const contraseña = document.getElementById('register-contraseña').value;
-            const errorDiv = document.getElementById('register-error');
-            const successDiv = document.getElementById('register-success');
-            errorDiv.textContent = '';
-            successDiv.textContent = '';
-            try {
-                const resp = await fetch('/api/auth/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombreUsuario: usuario, contraseña })
-                });
-                if (resp.ok) {
-                    const data = await resp.json();
-                    successDiv.textContent = data.mensaje || 'Usuario registrado correctamente';
-                } else {
-                    const data = await resp.json();
-                    errorDiv.textContent = data || 'Error al registrar usuario';
-                }
-            } catch {
-                errorDiv.textContent = 'Error de conexión con el servidor.';
-            }
-        });
-
-        document.getElementById('btn-logout').addEventListener('click', function () {
-            document.getElementById('main-content').style.display = 'none';
-            document.getElementById('login-container').style.display = '';
-            // Limpiar campos y mensajes
-            document.getElementById('login-usuario').value = '';
-            document.getElementById('login-contraseña').value = '';
-            document.getElementById('login-error').textContent = '';
-        });
-    </script>
+    <!-- Tab switching logic moved to app.js for centralized JS -->
 </body>
 </html>
+
+
+
+
+
+
+
 
 
