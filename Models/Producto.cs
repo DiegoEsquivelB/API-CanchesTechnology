@@ -3,6 +3,7 @@
     public class Producto
     {
         public int Id { get; set; }
+        public string CodigoProducto { get; set; } = string.Empty; // Código de producto
         public string Nombre { get; set; } = string.Empty;
         public int Cantidad { get; set; }
         public decimal Precio { get; set; }

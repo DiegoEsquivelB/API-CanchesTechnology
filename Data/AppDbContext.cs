@@ -30,6 +30,11 @@ namespace CanchesTechnology2.Data
                 .HasIndex(u => u.Codigo)
                 .IsUnique();
 
+            // Restricción única en Nit de proveedor
+            modelBuilder.Entity<Proveedor>()
+                .HasIndex(p => p.Nit)
+                .IsUnique();
+
             // 🔹 Pedido -> Detalles (cascada)
             modelBuilder.Entity<DetallePedido>()
                 .HasOne(d => d.Pedido)

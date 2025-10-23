@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CanchesTechnology2.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250905215603_AddSolicitudesCompra")]
-    partial class AddSolicitudesCompra
+    [Migration("20251021221452_NuevaMigracionUbicacion")]
+    partial class NuevaMigracionUbicacion
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -94,13 +94,13 @@ namespace CanchesTechnology2.Migrations
                     b.Property<int>("Cantidad")
                         .HasColumnType("int");
 
-                    b.Property<decimal?>("CostoUnitario")
+                    b.Property<decimal>("CostoUnitario")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ProductoId")
                         .HasColumnType("int");
 
-                    b.Property<int>("SolicitudCompraId")
+                    b.Property<int?>("SolicitudCompraId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -167,6 +167,10 @@ namespace CanchesTechnology2.Migrations
 
                     b.Property<int>("Cantidad")
                         .HasColumnType("int");
+
+                    b.Property<string>("CodigoProducto")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<decimal>("Costo")
                         .HasColumnType("decimal(65,30)");
@@ -241,7 +245,7 @@ namespace CanchesTechnology2.Migrations
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int?>("ProveedorId")
+                    b.Property<int>("ProveedorId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -273,6 +277,28 @@ namespace CanchesTechnology2.Migrations
                         .IsUnique();
 
                     b.ToTable("Ubicaciones");
+                });
+
+            modelBuilder.Entity("CanchesTechnology2.Models.Usuario", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContraseñaHash")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("NombreUsuario")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Usuarios");
                 });
 
             modelBuilder.Entity("CanchesTechnology2.Models.DetalleOrdenCompra", b =>
@@ -324,8 +350,7 @@ namespace CanchesTechnology2.Migrations
                     b.HasOne("CanchesTechnology2.Models.SolicitudCompra", "SolicitudCompra")
                         .WithMany("Detalles")
                         .HasForeignKey("SolicitudCompraId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Producto");
 
@@ -362,7 +387,9 @@ namespace CanchesTechnology2.Migrations
                 {
                     b.HasOne("CanchesTechnology2.Models.Proveedor", "Proveedor")
                         .WithMany()
-                        .HasForeignKey("ProveedorId");
+                        .HasForeignKey("ProveedorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Proveedor");
                 });
