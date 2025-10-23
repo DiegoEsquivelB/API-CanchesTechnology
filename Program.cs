@@ -77,6 +77,8 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "CanchesTechnology2 API", Version = "v1" });
+
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "Usa 'Bearer {token}'",
@@ -107,10 +109,30 @@ app.UseCors("AllowAll");
 app.UseDefaultFiles(); // Busca index.html por defecto
 app.UseStaticFiles();  // Sirve archivos de wwwroot
 
+// Configuración: permitir que un dominio específico muestre Swagger en producción.
+// Establece la variable de entorno SwaggerHost (ej: swagger.example.com) en Railway para el dominio que quieres que muestre Swagger.
+var swaggerHost = builder.Configuration["SwaggerHost"]; // lee env var SwaggerHost
+
 if (app.Environment.IsDevelopment())
 {
+    // En desarrollo, usar el comportamiento por defecto (/swagger)
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+// Si se configuró SwaggerHost, montar Swagger UI solo cuando el host de la petición coincida.
+if (!string.IsNullOrEmpty(swaggerHost))
+{
+    app.UseWhen(context => context.Request.Host.Host.Equals(swaggerHost, StringComparison.OrdinalIgnoreCase), appBuilder =>
+    {
+        // Servir UI de Swagger en la raíz (/) para ese host
+        appBuilder.UseSwagger();
+        appBuilder.UseSwaggerUI(c =>
+        {
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "CanchesTechnology2 API V1");
+            c.RoutePrefix = string.Empty; // sirve Swagger UI en el root del host
+        });
+    });
 }
 
 app.UseAuthentication();
