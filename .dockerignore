@@ -1,0 +1,13 @@
+bin/
+obj/
+.vs/
+.git/
+*.user
+*.suo
+*.log
+*.db
+local.settings.json
+**/*.md
+Dockerfile.*
+*.ps1
+wwwroot/

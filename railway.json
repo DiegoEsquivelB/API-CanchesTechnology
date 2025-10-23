@@ -1,0 +1,15 @@
+{
+  "plugins": [
+    {
+      "name": "docker",
+      "environments": [
+        {
+          "name": "deployment",
+          "build": {
+            "dockerfilePath": "./Dockerfile"
+          }
+        }
+      ]
+    }
+  ]
+}
